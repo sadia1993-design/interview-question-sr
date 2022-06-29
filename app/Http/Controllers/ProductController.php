@@ -18,10 +18,35 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('productVariants', 'ProductVariantPrices')->paginate(2);
-// dd($products);
-        return view('products.index', compact('products'));
+
+        $variants = Variant::join('product_variants', 'product_variants.variant_id', 'variants.id')
+                        ->select('variants.title', 'product_variants.variant', 'variants.id')
+                        ->distinct('product_variants.variant')
+                        ->get();
+
+
+        $variant_label = [];
+
+        foreach ($variants as $key => $value) {
+            $variant_label[$value->title][] = $value->variant;
+        }
+
+
+        $label = $variant_label;
+
+
+        // dd($label);
+
+        return view('products.index', compact('products', 'variants', 'label'));
     }
 
+    public function search(Request $request){
+
+         $title = ucwords($request->title);
+         $titleProduct = Product::where('title', 'like', '%'. $title. '%')->get();
+
+
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -41,6 +66,32 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // echo "<pre>";
+        //  print_r($request->all());
+        //  exit;
+       $product = Product::create($request->all());
+
+       $data = [];
+       $i =0;
+       foreach ($request->product_variant as $key => $value) {
+          foreach( $value['tags'] as $tag_key=> $tag_value){
+              $data[$i]['variant']  = $tag_value;
+              $data[$i]['variant_id']  = $value['option'];
+              $data[$i]['product_id']  = $product->id;
+              $data[$i]['created_at']  = date('Y-m-d h:s:i');
+              $data[$i]['updated_at']  = date('Y-m-d h:s:i');
+
+              $i++;
+          }
+       }
+
+      $productVariance=  ProductVariant::insert($data);
+
+    //   ProductVariantPrice
+        //  echo "<pre>";
+        //  print_r($request->all());
+        //  exit;
+
 
     }
 
@@ -62,10 +113,42 @@ class ProductController extends Controller
      * @param \App\Models\Product $product
      * @return \Illuminate\Http\Response
      */
-    public function edit(Product $product)
-    {
-        $variants = Variant::all();
-        return view('products.edit', compact('variants'));
+    public function edit(Request $request, $id) {
+
+        $variantArr = Variant::join('product_variants', 'product_variants.variant_id', 'variants.id')
+                ->select('variants.title', 'product_variants.variant', 'variants.id')
+                ->where('product_variants.product_id', $id)
+                ->distinct('product_variants.variant')
+                ->get();
+
+        $variantListArr = array();
+        foreach ($variantArr as $variant) {
+            $variantListArr[$variant->id][] = $variant->variant;
+        }
+
+        $variants = Variant::pluck('title', 'id')->toArray();
+
+
+        // get product Query
+        $targetArr = Product::select('products.*', 'product_images.file_path')
+                ->leftJoin('product_images', 'product_images.product_id', 'products.id')
+                ->where('products.id', $id)
+                ->first();
+
+
+        $previewArr = Product::select('products.*');
+        $previewArr = $previewArr->with(['ProductVariantPrices' => function($q) {
+                $q->join('products', 'products.id', 'product_variant_prices.product_id');
+                $q->leftJoin('product_variants as one', 'one.id', 'product_variant_prices.product_variant_one');
+                $q->leftJoin('product_variants as two', 'two.id', 'product_variant_prices.product_variant_two');
+                $q->leftJoin('product_variants as three', 'three.id', 'product_variant_prices.product_variant_three');
+                $q = $q->select('product_variant_prices.*', 'one.variant as one_variant', 'two.variant as two_variant'
+                        , 'three.variant as three_variant');
+            }
+        ]);
+        $previewArr = $previewArr->where('products.id', $id)->first();
+
+        return view('products.edit', compact('variants', 'targetArr', 'variantListArr', 'variants','previewArr'));
     }
 
     /**
@@ -75,9 +158,9 @@ class ProductController extends Controller
      * @param \App\Models\Product $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
-    {
-        //
+    public function update(Request $request) {
+        echo '<pre>';
+        print_r($request->all());exit;
     }
 
     /**
@@ -86,8 +169,7 @@ class ProductController extends Controller
      * @param \App\Models\Product $product
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Product $product)
-    {
+    public function destroy(Product $product) {
         //
     }
 }
