@@ -8,13 +8,24 @@
 
 
     <div class="card">
-        <form action="" method="get" class="card-header">
+        <form action="{{ route('search') }}" method="get" class="card-header">
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
                     <input type="text" name="title" placeholder="Product Title" class="form-control">
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
+
+                        @foreach ($label as  $key=>$var_lab)
+                           <optgroup label="{{ $key }}">
+
+                            @foreach ($var_lab as $id =>$variant)
+                              <option value=" {{ $variant }} ">{{ $variant }}</option>
+                            @endforeach
+
+                          </optgroup>
+                        @endforeach
+
 
                     </select>
                 </div>
@@ -62,8 +73,9 @@
                             <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
 
                                 <dt class="col-sm-3 col-xl-3 pb-0" >
-                                   @foreach ($product->ProductVariantPrices as $productVariantprices)
-                                       <span>{{ $productVariantprices->product_variant_one }} / {{$productVariantprices->product_variant_two}}</span><br>
+                                   @foreach ($product->ProductVariantPrices as $ProductVariantPrice)
+
+                                       <span>{{ $ProductVariantPrice->productVariantOne->variant }} / {{ $ProductVariantPrice->productVariantTwo->variant }}</span><br>
                                    @endforeach
                                 </dt>
                                 <dd class="col-sm-9 col-xl-9">
@@ -87,7 +99,7 @@
                         </td>
                         <td style="width: 20%">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                <a href="{{ route('product.edit', $product->id) }}" class="btn btn-success">Edit</a>
                             </div>
                         </td>
                     </tr>

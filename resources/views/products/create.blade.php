@@ -6,5 +6,6 @@
     </div>
     <div id="app">
         <create-product :variants="{{ $variants }}">Loading</create-product>
+
     </div>
 @endsection

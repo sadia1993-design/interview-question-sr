@@ -8,7 +8,14 @@ class ProductVariantPrice extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    public function variant(){
-        return $this->hasMany(Variant::class);
-    }
+
+    public function productVariantOne(){
+        return $this->belongsTo(ProductVariant::class, 'product_variant_one', 'id');
+       }
+    public function productVariantTwo(){
+        return $this->belongsTo(ProductVariant::class, 'product_variant_two', 'id');
+       }
+    public function productVariantThree(){
+        return $this->belongsTo(ProductVariant::class, 'product_variant_three', 'id');
+       }
 }

@@ -45,6 +45,8 @@ class ProductController extends Controller
          $title = ucwords($request->title);
          $titleProduct = Product::where('title', 'like', '%'. $title. '%')->get();
 
+         return view('products.search', compact('titleProduct'));
+
 
     }
     /**
@@ -151,25 +153,11 @@ class ProductController extends Controller
         return view('products.edit', compact('variants', 'targetArr', 'variantListArr', 'variants','previewArr'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request) {
-        echo '<pre>';
-        print_r($request->all());exit;
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Product $product) {
-        //
+    public function update(Request $request, $id){
+        $product = Product::find($id);
+        $input = $request->all();
+
+        dd($product);
     }
 }
